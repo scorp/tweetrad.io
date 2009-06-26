@@ -3,7 +3,6 @@ class WorkQueue
   
   attr_reader :name
   
-  
   class << self
     # get a connection to sqs
     def connection
@@ -43,6 +42,5 @@ class WorkQueue
   def flush
     get_sqs_queue.clear
   end
-  
   
 end
