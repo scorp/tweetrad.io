@@ -1,14 +1,14 @@
 require 'common'
 class WorkQueue
   
-  attr_reader :name
+  attr_reader :id, :name
   
   class << self
     # get a connection to sqs
     def connection
       RightAws::SqsGen2.new(
-        ApplicationConfiguration.aws_access_id, 
-        ApplicationConfiguration.aws_secret_key
+        App.aws_access_id, 
+        App.aws_secret_key
       )
     end
     
@@ -17,6 +17,7 @@ class WorkQueue
   # constructor
   def initialize(queue_name)
     @name = queue_name
+    @id   = Digest::MD5.hexdigest(@name)
   end
   
   # get the queue
