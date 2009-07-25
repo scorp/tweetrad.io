@@ -1,6 +1,5 @@
-require 'common'
 class Converter
-  CONVERTER_SLEEP = 5 unless defined? CONVERTER_SLEEP
+  CONVERTER_SLEEP = 0.5 unless defined? CONVERTER_SLEEP
   
   class QueueRequired < Exception; @message = "invalid query provided"; end
   class JobRequired < Exception; @message = "job required"; end
@@ -9,7 +8,6 @@ class Converter
   attr_accessor :sleep
   
   def initialize
-    @uuid = UUID.new.generate
   end
   
   # daemon loop for periodically checking the queue
@@ -18,9 +16,10 @@ class Converter
     loop do
       begin
         check_for_job
+      rescue
+        App.log_exception
+      ensure
         Kernel.sleep CONVERTER_SLEEP
-      rescue QueueRequired
-        App.log.info("error queue required")
       end
     end
   end
@@ -28,7 +27,9 @@ class Converter
   # check for a job on the queue
   def check_for_job
     raise QueueRequired unless @queue
-    job = @queue.pop
+    message = @queue.pop
+    return unless message
+    job = ConversionJob.load(message.body)
     process_job(job) if job
   end
   
@@ -40,10 +41,10 @@ class Converter
   
   # convert text to mp3
   def convert(job)
-    return false unless job && job.worthy?
-    
+    return false unless job
     # handle job json or an instantiated job
     job = ConversionJob.load(job) unless job.is_a?(ConversionJob)
+    return false unless job.worthy? # is this job worthy of conversion
     
     # use the appropriate tts converter for the platform
     tts_command = case App.platform

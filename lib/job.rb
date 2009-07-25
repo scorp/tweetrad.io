@@ -1,4 +1,3 @@
-require 'common'
 class ConversionJob
   
   class << self
@@ -9,7 +8,7 @@ class ConversionJob
   
   def initialize(data)
     @data = data
-    @data["uuid"] ||= UUID.new.generate
+    @data["checksum"] = Digest::MD5.hexdigest(text)
   end
   
   # accessor for the data hash
@@ -19,7 +18,7 @@ class ConversionJob
   
   # cleanup the tweet for the conversion
   def prepared_text
-    text.gsub(/"/,"").gsub(/http:\/\/.*\b/,"").strip
+    text.gsub(/"|\(|\)/,"").gsub(/http:\/\/.*\b/,"").strip
   end
   
   # is this tweet worthy of tweetrad.io?
@@ -29,7 +28,7 @@ class ConversionJob
   
   # return the file name for the given extension
   def filename(extension)
-    "/tmp/#{uuid}.#{extension}"
+    "/tmp/#{checksum}.#{extension}"
   end
   
   # path for the local wav file
@@ -44,7 +43,7 @@ class ConversionJob
   
   # where to write the mp3 for this job on s3
   def s3_path
-    "#{queue_id}/#{uuid}.mp3"
+    "#{queue_id}/#{checksum}.mp3"
   end
   
   # read the mp3 file
@@ -58,7 +57,7 @@ class ConversionJob
   
   # remove the local mp3 file
   def cleanup
-    FileUtils.rm(filename("mp3"))
+    FileUtils.rm(filename("mp3")) if File.exists?(filename("mp3"))
   end
   
   # serialize to json

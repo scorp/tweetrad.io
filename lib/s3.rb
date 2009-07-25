@@ -1,5 +1,3 @@
-require 'common'
-
 class FileStore
   class << self
     def copy_on_s3(current_path, destination_path)

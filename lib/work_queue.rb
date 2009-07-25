@@ -1,4 +1,3 @@
-require 'common'
 class WorkQueue
   
   attr_reader :id, :name

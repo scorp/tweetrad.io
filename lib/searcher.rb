@@ -1,4 +1,3 @@
-require 'common'
 class Searcher
   SEARCHER_SLEEP = 5
   
@@ -12,7 +11,6 @@ class Searcher
     raise InvalidQueryException unless query
     @query = query
     @queue = WorkQueue.new(query)
-    @uuid = UUID.new.generate
   end
 
   # daemon loop for executing the searcher
@@ -22,7 +20,7 @@ class Searcher
         search
         Kernel.sleep SEARCHER_SLEEP
       rescue
-        App.log.error($!.message)
+        App.log_exception
       end
     end
   end
@@ -41,7 +39,7 @@ class Searcher
 
   # add a conversion job to the queue
   def add_to_queue(result)
-    @last_twid = result.id
+    @last_twid = last_twid > result.id ? @last_twid : result.id
     @queue.push(ConversionJob.new({
       "queue_id"          => @queue.id,
       "twid"              => result.id,
