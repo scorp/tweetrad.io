@@ -1,6 +1,6 @@
 require 'common'
 class Converter
-  CONVERTER_SLEEP = 5
+  CONVERTER_SLEEP = 5 unless defined? CONVERTER_SLEEP
   
   class QueueRequired < Exception; @message = "invalid query provided"; end
   class JobRequired < Exception; @message = "job required"; end
@@ -40,7 +40,7 @@ class Converter
   
   # convert text to mp3
   def convert(job)
-    raise JobRequired unless job
+    return false unless job && job.worthy?
     
     # handle job json or an instantiated job
     job = ConversionJob.load(job) unless job.is_a?(ConversionJob)
@@ -48,9 +48,9 @@ class Converter
     # use the appropriate tts converter for the platform
     tts_command = case App.platform
       when "osx"
-        "say -o #{job.wav_path} #{job.text}"
+        "say -o #{job.wav_path} \"#{job.prepared_text}\""
       when "linux"
-        "echo #{job.text} | text2wave -o #{job.wav_path}"
+        "echo \"#{job.prepared_text}\" | text2wave -o #{job.wav_path}"
     end
 
     # execute the conversion and return the result
@@ -61,8 +61,7 @@ class Converter
   
   # write the mp3 up to s3
   def write_to_s3(job)
-    file = File.read("#{job.mp3_path}")
-    FileStore.write_to_s3(job.s3_path, job.mp3_path)
+    FileStore.write_to_s3(job.s3_path, job.mp3)
   end
   
 end

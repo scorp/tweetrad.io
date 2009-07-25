@@ -14,6 +14,18 @@ class Searcher
     @queue = WorkQueue.new(query)
     @uuid = UUID.new.generate
   end
+
+  # daemon loop for executing the searcher
+  def go
+    loop do
+      begin
+        search
+        Kernel.sleep SEARCHER_SLEEP
+      rescue
+        App.log.error($!.message)
+      end
+    end
+  end
   
   # execute the search and run its actions
   def search()
@@ -24,7 +36,6 @@ class Searcher
       results.each{|result| add_to_queue(result)}
       break unless results.size > 0
       page += 1
-      Kernel.sleep(SEARCHER_SLEEP)
     end 
   end
 

@@ -7,11 +7,11 @@ require 'uuid'
 require 'ruby-debug'
 
 # application constants
-APP_ROOT       = File.dirname(__FILE__)
+APP_ROOT       = File.dirname(__FILE__) unless defined? APP_ROOT
 
 class App
-  AWS_ACCESS_ID  = "1GD12SM2VVKC1EYS5XR2"
-  AWS_SECRET_KEY = "+mAu07yxj2Zwzv5eFixKB9N+jbBZQfRry0PXPKGv"
+  AWS_ACCESS_ID  = "1GD12SM2VVKC1EYS5XR2" unless defined? AWS_ACCESS_ID
+  AWS_SECRET_KEY = "+mAu07yxj2Zwzv5eFixKB9N+jbBZQfRry0PXPKGv" unless defined? AWS_SECRET_KEY
   
   class << self
     

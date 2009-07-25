@@ -56,7 +56,7 @@ class FileStore
     def s3
       @s3 ||= RightAws::S3.new(
         App.aws_access_id,
-        App.secret_key, 
+        App.aws_secret_key, 
         {
           :multi_thread=>true, 
           :protocol => "http", 
@@ -67,7 +67,7 @@ class FileStore
     def s3_gen
       @s3_generator ||= RightAws::S3Generator.new(
         App.aws_access_id,
-        App.secret_key, 
+        App.aws_secret_key, 
         {
           :multi_thread=>true, 
           :protocol => "http", 
