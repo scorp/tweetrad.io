@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+require File.join(File.dirname(__FILE__), '..', 'lib', 'boot.rb')
+loop do
+  App.log.info "starting converter daemon"
+  converter = Converter.new
+  converter.queue = WorkQueue.new("shareflow")
+  converter.go
+end
