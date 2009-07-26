@@ -1,8 +1,11 @@
 #!/usr/bin/env ruby
-require File.join(File.dirname(__FILE__), '..', 'lib', 'boot.rb')
-
+require File.join(File.dirname(__FILE__), '..', 'boot.rb')
+App.log.info "starting search daemon"
+searcher = Searcher.new
 loop do
-  App.log.info "starting search daemon"
-  searcher = Searcher.new("shareflow")
-  searcher.go
+  query = Query.choose
+  App.log.info "preparing to search with query:#{query}"
+  searcher.query = query
+  searcher.search
+  sleep 5
 end

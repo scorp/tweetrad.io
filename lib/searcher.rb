@@ -1,45 +1,58 @@
 class Searcher
-  SEARCHER_SLEEP = 5
-  
-  class InvalidQueryException < Exception
-    @message = "invalid query provided"
-  end
+  RESULTS_PER_PAGE = 50
   
   attr_reader :queue, :query
-  
-  def initialize(query=nil)
-    raise InvalidQueryException unless query
+
+  def query=(query)
+    return unless query
     @query = query
     @queue = WorkQueue.new(query)
   end
 
-  # daemon loop for executing the searcher
-  def go
-    loop do
-      begin
-        search
-        Kernel.sleep SEARCHER_SLEEP
-      rescue
-        App.log_exception
-      end
-    end
-  end
-  
   # execute the search and run its actions
   def search()
+    @query_status = Query.for_queue(@queue)
+    unless @query && @query_status
+      App.log.info("nothing to do...so bored")
+      return
+    end
+
+    total   = 0
     results = []
     page = 1
+
+    @last_twid = @query_status.last_twid
+
     loop do
-      results = fetch_page(page).select{ |result| result.id > last_twid}
+      # App.log.info("last_twid: " + @last_twid.to_s)
+      results = fetch_page(page).select{|result| 
+        if result.id.to_i > @last_twid
+          App.log.info("result is #{result.id.to_i} greater than" + @last_twid.to_s)
+          true
+        end
+      }
       results.each{|result| add_to_queue(result)}
-      break unless results.size > 0
-      page += 1
+      total += results.size
+      # unless results.size > 0
+      update_query_status(total)
+      break
+      # end
+      # page += 1
     end 
+  end
+  
+  # update the query status
+  def update_query_status(total)
+    @query_status.last_twid = @last_twid
+    @query_status.last_run = Time.now.utc
+    @query_status.last_result_count = total
+    @query_status.save!
   end
 
   # add a conversion job to the queue
   def add_to_queue(result)
-    @last_twid = last_twid > result.id ? @last_twid : result.id
+    @last_twid = @last_twid > result.id ? @last_twid : result.id
+    App.log.info("pushing job to queue #{@queue.name}:\n#{result.text}\n#{"-"*80}")
     @queue.push(ConversionJob.new({
       "queue_id"          => @queue.id,
       "twid"              => result.id,
@@ -54,16 +67,12 @@ class Searcher
     }).to_json)
   end
   
-  def last_twid
-    @last_twid || 0
-  end
-  
   private 
   
   # fetch a page of results from the twitter search api
   def fetch_page(page)
     @client ||= Grackle::Client.new(:api=>:search)
-    @client.search.json?(:q=>@query, :since_id=>last_twid || 0, :rpp=>100, :page=>page).results
+    @client.search.json?(:q=>@query, :since_id=>@last_twid || 0, :rpp=>RESULTS_PER_PAGE, :page=>page).results
   end
   
 end

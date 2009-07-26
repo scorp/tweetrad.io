@@ -8,7 +8,8 @@ class ConversionJob
   
   def initialize(data)
     @data = data
-    @data["checksum"] = Digest::MD5.hexdigest(text)
+    @created_at = Time.now
+    @data["digest"] = Digest::MD5.hexdigest(text)
   end
   
   # accessor for the data hash
@@ -28,7 +29,7 @@ class ConversionJob
   
   # return the file name for the given extension
   def filename(extension)
-    "/tmp/#{checksum}.#{extension}"
+    "/tmp/#{digest}.#{extension}"
   end
   
   # path for the local wav file
@@ -43,7 +44,7 @@ class ConversionJob
   
   # where to write the mp3 for this job on s3
   def s3_path
-    "#{queue_id}/#{checksum}.mp3"
+    "#{queue_id}/#{digest}.mp3"
   end
   
   # read the mp3 file

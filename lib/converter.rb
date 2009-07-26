@@ -1,32 +1,15 @@
 class Converter
-  CONVERTER_SLEEP = 0.5 unless defined? CONVERTER_SLEEP
-  
-  class QueueRequired < Exception; @message = "invalid query provided"; end
-  class JobRequired < Exception; @message = "job required"; end
-  
   attr_accessor :queue
-  attr_accessor :sleep
   
   def initialize
   end
   
-  # daemon loop for periodically checking the queue
-  # and converting the contents to mp3
-  def go
-    loop do
-      begin
-        check_for_job
-      rescue
-        App.log_exception
-      ensure
-        Kernel.sleep CONVERTER_SLEEP
-      end
-    end
-  end
-  
   # check for a job on the queue
   def check_for_job
-    raise QueueRequired unless @queue
+    unless @queue
+      App.log.info("nothing to do...so bored")
+      return
+    end
     message = @queue.pop
     return unless message
     job = ConversionJob.load(message.body)
@@ -62,7 +45,9 @@ class Converter
   
   # write the mp3 up to s3
   def write_to_s3(job)
-    FileStore.write_to_s3(job.s3_path, job.mp3)
+    FileStore.write_to_s3(job.s3_path, job.mp3, {
+      "job" => job.to_json
+    })
   end
   
 end

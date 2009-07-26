@@ -1,0 +1,7 @@
+adapter:  mysql
+database: tweetradio
+pool:     5
+timeout:  5000
+host:     localhost
+username: tweetradio
+password: ""

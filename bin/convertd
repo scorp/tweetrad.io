@@ -1,8 +1,17 @@
 #!/usr/bin/env ruby
-require File.join(File.dirname(__FILE__), '..', 'lib', 'boot.rb')
+require File.join(File.dirname(__FILE__), '..', 'boot.rb')
+
+App.log.info "starting converter daemon"
+queues    = {}
+converter = Converter.new
+
 loop do
-  App.log.info "starting converter daemon"
-  converter = Converter.new
-  converter.queue = WorkQueue.new("shareflow")
-  converter.go
+  query = Query.choose
+  if query
+    queues[query] ||= WorkQueue.new(query)
+    converter.queue = queues[query]
+    App.log.info "checking for jobs on queue : #{queues[query]}"
+    converter.check_for_job
+  end
+  sleep 0.5
 end
