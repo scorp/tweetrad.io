@@ -22,10 +22,10 @@ class FileStore
       end
     end
     
-    def write_to_s3(path, data, meta_headers={})
+    def write_to_s3(path, data, meta_headers={}, headers={})
       started_at = Time.now
       App.log.info("starting s3 write at #{started_at}")
-      s3_bucket.put(path, data, meta_headers)
+      s3_bucket.put(path, data, meta_headers, "public-read", headers)
       finished_at = Time.now
       App.log.info("#{finished_at} total time #{finished_at - started_at}")
     end

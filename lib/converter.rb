@@ -46,8 +46,10 @@ class Converter
   # write the mp3 up to s3
   def write_to_s3(job)
     FileStore.write_to_s3(job.s3_path, job.mp3, {
-      "job" => job.to_json
-    })
+      "job"       => job.to_json,
+    },
+    {"Content-Type" => "audio/mpeg"}
+    )
   end
   
 end

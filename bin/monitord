@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+require File.join(File.dirname(__FILE__), '..', 'boot.rb')
+App.log.info "starting monitor daemon"
+monitor = Monitor.new
+loop do
+  begin
+    query = Query.choose
+    if query
+      App.log.info "preparing to monitor folder with query:#{query}"
+      monitor.query = query
+      monitor.check_folder
+    else
+      App.log.info "monitord says: nothing to monitor...so bored"
+    end
+    sleep 2
+  rescue
+    App.log_exception
+  end
+end

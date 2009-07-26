@@ -21,7 +21,7 @@ class WorkQueue
   
   # get the queue
   def get_sqs_queue
-    @queue ||= RightAws::SqsGen2::Queue.create(self.class.connection, name, true)
+    @queue ||= RightAws::SqsGen2::Queue.create(self.class.connection, @id, true)
   end
   
   # add a job to the queue
@@ -41,6 +41,12 @@ class WorkQueue
   # purge the messages in the queue
   def flush
     get_sqs_queue.clear
+  end
+
+  # destroy the queue
+  def delete
+    get_sqs_queue.delete(true)
+    @queue = nil
   end
   
 end

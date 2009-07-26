@@ -36,6 +36,12 @@ class App
     def log
       @log ||= Logger.new(STDOUT)
     end
+
+    def log_info(message)
+      log.info("*"*80)
+      log.info(message)
+      log.info("*"*80)
+    end
     
     # exception handler
     def log_exception(ex=$!, message=nil)

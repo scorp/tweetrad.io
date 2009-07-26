@@ -13,7 +13,6 @@ class Searcher
   def search()
     @query_status = Query.for_queue(@queue)
     unless @query && @query_status
-      App.log.info("nothing to do...so bored")
       return
     end
 

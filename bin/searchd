@@ -3,9 +3,17 @@ require File.join(File.dirname(__FILE__), '..', 'boot.rb')
 App.log.info "starting search daemon"
 searcher = Searcher.new
 loop do
-  query = Query.choose
-  App.log.info "preparing to search with query:#{query}"
-  searcher.query = query
-  searcher.search
+  begin
+    query = Query.choose
+    if query
+      App.log.info "preparing to search with query: '#{query}'"
+      searcher.query = query
+      searcher.search
+    else
+      App.log.info("searchd says: nothing to do...so bored")
+    end
+  rescue
+    App.log_exception
+  end
   sleep 5
 end

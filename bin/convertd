@@ -6,12 +6,18 @@ queues    = {}
 converter = Converter.new
 
 loop do
-  query = Query.choose
-  if query
-    queues[query] ||= WorkQueue.new(query)
-    converter.queue = queues[query]
-    App.log.info "checking for jobs on queue : #{queues[query]}"
-    converter.check_for_job
+  begin
+    query = Query.choose
+    if query
+      queues[query] ||= WorkQueue.new(query)
+      converter.queue = queues[query]
+      App.log.info "checking for jobs on queue : '#{queues[query].name}':#{queues[query].id}"
+      converter.check_for_job
+    else
+      App.log.info("convertd says: nothing to do...so bored")
+    end
+  rescue
+    App.log_exception
   end
   sleep 0.5
 end
