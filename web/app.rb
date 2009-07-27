@@ -11,9 +11,9 @@ class TweetRadio < Sinatra::Base
     erb :index
   end
   
-  get "/tweets.json" do
-    halt 400 unless params[:query]
-    query = params[:query] 
+  post "/tweets.json" do
+    content_type "application/json"
+    halt 400 unless params[:json] && query = JSON.parse(params[:json])["query"]
     listing = get_listing(query)
     JSON.pretty_generate(listing)
   end
@@ -30,7 +30,7 @@ class TweetRadio < Sinatra::Base
     folder.listing.map{|key|
       {
         "url"           => key.public_link,
-        "last-modified" => Time.parse(key.headers["last-modified"]),
+        "last_modified" => Time.parse(key.headers["last-modified"]),
         "tweet"         => JSON.parse(key.meta_headers["job"])
       }
     }

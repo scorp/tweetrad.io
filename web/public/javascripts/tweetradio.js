@@ -15,10 +15,12 @@
       fetch : function(query){
         new Ajax.Request(endpoint,{
           method      : 'post',
-          parameters  : Object.toJSON({
-            twids     : tr.data.twidsFor(query),
-            query     : query
-          }),
+          parameters  : {
+            json      : Object.toJSON({
+                          twids : tr.data.twidsFor(query),
+                          query : query
+                        })
+          },
           onSuccess   : this.onSuccess.bind(this, query),
           onFailure   : this.onFailure.bind(this, query),
           onException : this.onException.bind(this, query)
@@ -37,6 +39,7 @@
       **/
       onFailure : function(query, transport){
         // handle failure
+        console.log('server failure');
       },
 
       /**
@@ -44,6 +47,7 @@
       **/
       onException : function(query, transport){
         // handle exception
+        console.log('exception');
       }
     };
   }();
@@ -71,7 +75,18 @@
       * store response json
       **/
       store : function(query, json){
-        debugger;
+        var qs = this.get(query);
+        json.each(function(t){
+          var tweet = {
+            last_modfied : Date.parse(t.last_modified),
+            meta_data    : t.tweet,
+            url          : t.url,
+            twid         : t.tweet.twid
+          };
+          if (!qs.get(tweet.twid)) {
+            qs.set(tweet.twid, tweet);
+          }
+        }.bind(this));
       },
       
       /**
@@ -86,7 +101,7 @@
       **/
       unplayedTweetsForQuery : function(query){
         var qs = this.get(query);
-        qs.values().select(
+        return qs.values().select(
           function(tweet){
             return !tweet.played;
         })
@@ -148,15 +163,24 @@
       * play the next track
       **/
       play : function(){
+        console.log('starting play loop');
         if (!this.query) {
           setTimeout(this.play.bind(this), 1000);
         }
         var tweets = tr.data.unplayedTweetsForQuery(this.query);
-        while (tweet = tweets.pop()) {
+        var _play = function(tweet){
           console.log(tweet);
+          Sound.play(tweet.url, {replace : true});
           tweet.played = true;
-        };
-        setTimeout(this.play.bind(this), 1000);
+          tweet = tweets.pop();
+          if (tweet) {
+            setTimeout(_play.bind(this, tweet), 7500);
+          } else {
+            setTimeout(this.play.bind(this), 1000);
+          }
+        }.bind(this);
+        tweet = tweets.pop();
+        _play(tweet);
       }
     };
   }();
