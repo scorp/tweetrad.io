@@ -6,6 +6,7 @@ require 'grackle'
 require 'json'
 require 'uuid'
 require 'optparse'
+require 'sinatra/base'
 require 'active_record'
 require 'ruby-debug'
 
@@ -17,8 +18,10 @@ class App
   AWS_ACCESS_ID  = "1GD12SM2VVKC1EYS5XR2" unless defined? AWS_ACCESS_ID
   AWS_SECRET_KEY = "+mAu07yxj2Zwzv5eFixKB9N+jbBZQfRry0PXPKGv" unless defined? AWS_SECRET_KEY
   
+  # =================
+  # = Class Methods =
+  # =================
   class << self
-    
     # return the apps platform
     def platform
       case RUBY_PLATFORM
@@ -36,7 +39,8 @@ class App
     def log
       @log ||= Logger.new(STDOUT)
     end
-
+    
+    # log info level
     def log_info(message)
       log.info("*"*80)
       log.info(message)
@@ -56,6 +60,7 @@ class App
     # ============
     # = AWS KEYS =
     # ============
+    # aws vars
     def aws_access_id
       AWS_ACCESS_ID
     end
@@ -67,7 +72,34 @@ class App
     def aws_bucket
       "tweetrad.io"
     end
+  end # end class methods
+  
+  # =================================
+  # = Configuration for the Web App =
+  # =================================
+  module WebConfiguration
+    def self.included(i)
+      i.extend(WebConfiguration::ClassMethods)
+      i.load
+    end
+    module ClassMethods
+      def load
+        puts "loading configuration"
+
+        # configure the push app
+        set :root, File.join(APP_ROOT, "web")
+        set :port, 8880
+        set :run, false
+
+        puts "running in env:#{environment} on #{port}"
+
+        # logging
+        set :logging, true
+        set :dump_errors, true
+      end
+    end
   end
+
 end
 
 # load path

@@ -24,12 +24,7 @@ class Searcher
 
     loop do
       # App.log.info("last_twid: " + @last_twid.to_s)
-      results = fetch_page(page).select{|result| 
-        if result.id.to_i > @last_twid
-          App.log.info("result is #{result.id.to_i} greater than" + @last_twid.to_s)
-          true
-        end
-      }
+      results = fetch_page(page).select{|result| result.id.to_i > @last_twid }
       results.each{|result| add_to_queue(result)}
       total += results.size
       # unless results.size > 0
