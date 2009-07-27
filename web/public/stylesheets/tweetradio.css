@@ -1,0 +1,22 @@
+body{
+  background : #6CF;
+  font-family : "Helvetica Neue", Helvetica, arial, sans-serif;
+}
+
+div.logo{
+  color:#fff;
+  font-size:36px;
+  font-weight:bold;
+  position:absolute;
+  top:130px;
+  right:306px;
+}
+
+div.bird{
+  background: url(/images/bird.png) no-repeat;
+  height:180px;
+  width:265px;
+  position:fixed;
+  top:50px;
+  right:50px;
+}

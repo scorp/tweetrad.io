@@ -86,11 +86,12 @@ class App
       def load
         puts "loading configuration"
 
-        # configure the push app
         set :root, File.join(APP_ROOT, "web")
         set :port, 8880
         set :run, false
-
+        set :static, true
+        set :public, File.join(APP_ROOT, "web", "public")
+        
         puts "running in env:#{environment} on #{port}"
 
         # logging
